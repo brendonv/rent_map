@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react'
+import Path from './Path'
 
 export default class Map extends Component {
 
@@ -22,8 +23,6 @@ export default class Map extends Component {
         let s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height)
         let t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2]
 
-        console.log(b, s, t, height, width)
-        
         projection
             .scale(s)
             .translate(t);
@@ -46,24 +45,15 @@ export default class Map extends Component {
         //     .attr("dy", ".35em")
         //     .text(function(d) { return d.properties.name; });
 
-        console.log(counties)
-
         return (
             <svg height={height}
                  width={width}>
                  {counties.features.map( c =>
-                    (<path className="outline"
-                           onClick={this.handleClick}
-                           d={path(c)}>
-                     </path>)
+                    <Path shape={path(c)}/>
                   )}
             </svg>
         )
 
-    }
-
-    renderLabel(text) {
-        return <text>some text</text>
     }
 }
 
@@ -72,7 +62,3 @@ Map.propTypes = {
     height: PropTypes.number,
     width: PropTypes.number
 }
-
-// <path className="outline"
-//                        d={path(counties)}>
-//                  </path>
