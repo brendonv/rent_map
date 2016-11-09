@@ -18,7 +18,6 @@ export default class Path extends Component {
     }
 
     style() {
-        console.log(this.state)
       if (this.state.hovered) {
         return { fill: "red" }
       } else {
@@ -27,7 +26,6 @@ export default class Path extends Component {
     }
 
     onMouseOver() {
-        console.log("ENTER")
         this.setState({ hovered:true })
     }
 
