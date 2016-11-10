@@ -4,8 +4,21 @@ text {
   text-anchor: middle;
 }
 
+#map {
+    height:1160px;
+    width:100%;
+    position: initial;
+    overflow: initial;
+}
+
 .outline {
   fill: #ddd;
   stroke: #000;
   stroke-width: 1.5px;
 }
+
+.customBox {
+      background: yellow;
+      border: 1px solid black;
+      position: absolute;
+    }
