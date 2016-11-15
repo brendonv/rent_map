@@ -12,5 +12,5 @@ exports.regions = (req, res) => {
 
 exports.regionData = (req, res) => {
     console.log('REGION DATA');
-    return res.json({data: ["some", "data"]});
+    return res.json({ data: {medianRent: 55, total: 175, buildings: 20, totalRooms: 345, properties: 45} });
 }
