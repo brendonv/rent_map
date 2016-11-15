@@ -5,7 +5,10 @@ import { Provider } from 'react-redux'
 import App from './containers/App'
 import configureStore from './store/configureStore'
 import { fetchRegions } from './actions'
+//GLOBAL STYLES
 require("./style/main.css")
+require("./style/normalize.css")
+require("./style/skeleton.css")
 
 const store = configureStore() //NOTE: to set initial state, pass in state object as first argument
 
