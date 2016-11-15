@@ -27,7 +27,7 @@ function selectedCity(state = 'PORTLAND', action) {
 
 function regionData(state = {
         isFetching: false,
-        data: []
+        data: {}
                 }, action) {
     switch (action.type) {
         case types.REGION_DATA_REQUEST:
