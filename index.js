@@ -60,8 +60,12 @@ db.once('open', (cb) => {
  */
 
 require('./models/listing');
+require('./models/region');
+require('./models/metrics');
 
 const Listing = mongoose.model('Listing');
+const Region = mongoose.model('Region');
+const Metrics = mongoose.model('Metrics');
 
 /*
  * Routes
