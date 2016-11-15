@@ -224,6 +224,11 @@ class MapContainer extends Component {
             )
     }
 
+    //Here is where we listen for changes in global state (via props) and dispatch actions/set local state accordingly
+    componentWillReceiveProps(nextProps) {
+
+    }
+
     setStyle(feature) {
         var color = 'gray';
         if (feature.getProperty('isHighlighted')) {
@@ -242,6 +247,9 @@ class MapContainer extends Component {
         if (this.state.lastHighlighted) this.state.lastHighlighted.setProperty('isHighlighted', false);
         event.feature.setProperty('isHighlighted', true);
         this.state.lastHighlighted = event.feature;
+
+        //Trigger action in App.js container
+        this.props.onClick(event.feature.getProperty("name"))
     }
 
     handleRightClick(event) {
@@ -399,16 +407,17 @@ class MapContainer extends Component {
 
         return (
             <div>
-            <div id="map" ref={this.attachMap}>
-            </div>
-            {this.state.hover && <Label map={this.state.map}/>}
+                <div id="map" ref={this.attachMap}>
+                </div>
+                {this.state.hover && <Label map={this.state.map}/>}
             </div>
         )
     }
 }
 
 MapContainer.propTypes = {
-    city: PropTypes.string
+    city: PropTypes.string,
+    onClick: PropTypes.func.isRequired
 }
 
 function mapStateToProps(state) {
