@@ -4,13 +4,20 @@ var mongoose = require('mongoose'),
 
 var listingSchema = new Schema({
     zillow_id: {type: String, index: true},
-    property_type: {type: String, index: true, enum: ["BUILDINGS", "PROPERTIES"]},
-    listing_type: {type: String, index: true, enum: ["RENTAL", "SALE"]},
+    name: String,
+    property_type: {type: String, enum: ["BUILDING", "PROPERTY"]},
+    listing_type: {type: String, enum: ["RENTAL", "SALE"]},
     location: {
         type: {type: "String"},
-        coordinates: [Number]
-    }
+        coordinates: [Number] // [<Longitude>, <Latitude>]
+    },
+    thumbnail: String,
+    bedroom: Number,
+    bath:  Number,
+    sq_feet:  Number,
+    region: {type: Schema.Types.ObjectId, ref: 'Region', index: true}
 });
+
 
 
 var Listing = mongoose.model('Listing', listingSchema);
