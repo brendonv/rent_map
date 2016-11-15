@@ -48,7 +48,7 @@ export function regionDataFailure(region, json) {
 export function fetchRegionData(city, region) {
     return dispatch => {
         dispatch(regionDataRequest(region))
-        return fetch(`${API}/api/data/${city}/${region}`)
+        return fetch(`${API}/api/data/${city.toLowerCase()}/${region.toLowerCase()}`)
             .then(response => response.json())
             .then(json =>
                 // We can dispatch many times!
@@ -100,4 +100,23 @@ export function fetchRegions(city) {
                 dispatch(regionsSuccess(city, json))
             )
     }
+}
+
+function shouldFetchRegionData(state, region) {
+  const data = state.dataByRegion[region]
+  if (!data) {
+    return true
+  }
+  if (data.isFetching) {
+    return false
+  }
+  return data.didInvalidate
+}
+
+export function fetchRegionDataIfNeeded(city, region) {
+  return (dispatch, getState) => {
+    if (shouldFetchRegionData(getState(), region)) {
+      return dispatch(fetchRegionData(city, region))
+    }
+  }
 }
