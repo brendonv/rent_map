@@ -3,6 +3,7 @@ const path = require('path');
 const request = require('request');
 const async = require('async');
 const moment = require('moment');
+const transform = require('./transform');
 
 const args = process.argv.slice(2);
 // const PORTLAND_REGIONS = require('../data/portland/regions.json');
@@ -24,6 +25,8 @@ function getRentalData(city = "portland") {
         callZillow(getURL(rid), object, index, fileURL, callback);
     }, function(err) {
         if (err) console.log("ERROR: ", err);
+
+        transform.transformFile(fileURL, null, null);
     });
 
 };
