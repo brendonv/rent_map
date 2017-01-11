@@ -47,19 +47,18 @@
 /* For devices larger than 400px */
 @media (min-width: 400px) {
   .container {
-    width: 90%;
+    width: 100%;
     padding: 0; }
 }
 
 /* For devices larger than 1000px */
 @media (min-width: 1000px) {
-  .container {
-    width: 90%; }
   .column,
   .columns {
     margin-left: 4%; }
   .column:first-child,
   .columns:first-child {
+    margin-bottom: 0;
     margin-left: 0; }
 
   .one.column,

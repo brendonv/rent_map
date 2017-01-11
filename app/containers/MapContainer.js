@@ -232,7 +232,8 @@ class MapContainer extends Component {
     setStyle(feature) {
         var color = 'gray';
         if (feature.getProperty('isHighlighted')) {
-            color = 'blue';
+            color = 'green';
+            // color = 'rgb(180,226,216)';
         }
         return ({
             fillColor: color,
@@ -262,7 +263,7 @@ class MapContainer extends Component {
             return;
         }
         this.state.map.data.revertStyle();
-        this.state.map.data.overrideStyle(event.feature, {strokeWeight: 2, fillColor: 'red'});
+        this.state.map.data.overrideStyle(event.feature, {strokeWeight: 2, fillColor: 'blue'});
         this.setState({hover:true})
 //         function TxtOverlay(pos, txt, cls, map) {
 

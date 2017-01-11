@@ -12,9 +12,6 @@ var listingSchema = new Schema({
         coordinates: [Number] // [<Longitude>, <Latitude>]
     },
     thumbnail: String,
-    bedroom: Number,
-    bath:  Number,
-    sq_feet:  Number,
     region: {type: Schema.Types.ObjectId, ref: 'Region', index: true}
 });
 

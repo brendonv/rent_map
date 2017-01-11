@@ -48,7 +48,7 @@ export function regionDataFailure(region, json) {
 export function fetchRegionData(city, region) {
     return dispatch => {
         dispatch(regionDataRequest(region))
-        return fetch(`${API}/api/data/${city.toLowerCase()}/${region.toLowerCase()}`)
+        return fetch(`${API}/api/data/${city.toLowerCase()}/${region}`)
             .then(response => response.json())
             .then(json =>
                 // We can dispatch many times!
@@ -78,7 +78,7 @@ export function regionsSuccess(city, json) {
     return {
         type: types.REGIONS_SUCCESS,
         city,
-        data: json.data,
+        data: json,
         receivedAt: Date.now()
     }
 }

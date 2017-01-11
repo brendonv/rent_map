@@ -3,7 +3,11 @@ var mongoose = require('mongoose'),
 
 
 var metricsSchema = new Schema({
-    data: [],
+    price: Number,
+    avail: Number,
+    sq_ft: Number,
+    bd: Number,
+    ba: Number,
     listing: { type: Schema.Types.ObjectId, ref: 'Listing', index: true },
     date: String
 });

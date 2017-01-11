@@ -1,10 +1,12 @@
-const fs       = require('fs');
-const path     = require('path');
-const request  = require('request');
-const async    = require('async');
-const moment   = require('moment');
-const mongoose = require('mongoose');
-const config   = require('../config/config');
+const fs        = require('fs');
+const path      = require('path');
+const request   = require('request');
+const async     = require('async');
+const moment    = require('moment');
+const mongoose  = require('mongoose');
+const config    = require('../config/config');
+const util      = require('util');
+const aggregate = require('./aggregate');
 
 require('../models/listing');
 require('../models/region');
@@ -16,7 +18,6 @@ const Metrics  = mongoose.model('Metrics');
 
 const args = process.argv.slice(2);
 
-const ZILLOW_PROPERTIES = ['buildings', 'properties', 'region'];
 const CITY = 'PORTLAND';
 
 mongoose.connect(config.mongoDB);
@@ -42,6 +43,13 @@ db.once('open', (cb) => {
  *
  *      -f, --file
  *               Transform given file. Path relative to project's root.
+ *
+ *
+ * EXAMPLE 
+ *
+ *      node scripts/transform.js -d /data/portland/scraped
+ *
+ *      node scripts/transform.js -f /data/portland/scraped/zillow_2016-11-20T13:46:42-08:00.json
  *
  */
 
@@ -81,14 +89,16 @@ function transformDirectory(dirname) {
 function transformFile(filename, fullPath = "", callback) {
     if (!filename && callback) return callback();
 
-    fs.readFile(path.join(fullPath, filename), 'utf8', (error, body) => {
+    let fp = fullPath || path.dirname(__dirname);
+    let cb = callback || function(){ console.log("DONE"); process.exit(); };
+
+    fs.readFile(path.join(fp, filename), 'utf8', (error, body) => {
         if (error) {
             console.log("ERROR: transformFile readFile", error);
-            if (callback) callback();
-            return;
+            return cb();
         }
 
-        scrapedToMongoDB(body, filename, callback);
+        scrapedToMongoDB(body, filename, cb);
 
     });
 }
@@ -110,8 +120,7 @@ function scrapedToMongoDB(json, filename, callback) {
     } catch (error) {
         //do something
         console.log("ERROR: parsing file JSON", error);
-        if (callback) callback();
-        return;
+        return callback();;
     }
 
     async.eachOfSeries(data, (region, index, cb) => {
@@ -149,7 +158,7 @@ function scrapedToMongoDB(json, filename, callback) {
 
         });
     }, error => {
-        callback();
+        aggregate.runAggregation(date, callback, true); //Run the aggregation script with the newly created data
     });
 }
 
@@ -157,7 +166,11 @@ function listingsForRegion(region, data, date, callback) {
     let done = false;
     async.eachOfSeries(data.properties, (property, index, cb) => {
         let priceData = {
-            "p": property[8][0] //Price
+            "bd": property[8][1], //Bedroom
+            "ba": property[8][2], //Bath
+            "sq_ft": property[8][3], //Square feet
+            "avail": 1,    //Available units
+            "price": toNumber(property[8][0]) //Price
         };
         Listing.findOne({ zillow_id: property[0] }, (err, listing) => {
             if (err) {
@@ -174,9 +187,6 @@ function listingsForRegion(region, data, date, callback) {
                         coordinates: [property[2], property[1]]
                     },
                     thumbnail: property[8][5],
-                    bedroom: property[8][1],
-                    bath:  property[8][2],
-                    sq_feet: property[8][3],
                     region: region._id
                 });
 
@@ -189,10 +199,6 @@ function listingsForRegion(region, data, date, callback) {
                     dataForListing(savedListing, priceData, date, cb);
                 });
             } else {
-                //Check if data has changed
-                if (listing.bedroom !== property[8][1] || listing.bathroom !== property[8][2] || listing.sq_feet !== property[8][3]) {
-                    console.log("### LISTING CHANGE:", listing.name, listing._id,"\n\t\tBd:", listing.bedroom, property[8][1],"\n\t\tBa:", listing.bathroom, property[8][2],"\n\t\tSqft:", listing.sq_feet, property[8][3])
-                }
 
                 dataForListing(listing, priceData, date, cb);
             }
@@ -202,8 +208,11 @@ function listingsForRegion(region, data, date, callback) {
     });
     async.eachOfSeries(data.buildings, (building, index, cb) => {
         let dataObject = {
-            "a": building[2],    //Available units
-            "p": building[4][0] //Price
+            "bd": building[4][3], //Bedroom
+            "ba": building[4][4], //Bath
+            "sq_ft": building[4][5], //Square feet
+            "avail": building[2],    //Available units
+            "price": toNumber(building[4][0]) //Price
         };
         Listing.findOne({ zillow_id: building[5] }, (err, listing) => {
             if (err) {
@@ -221,9 +230,6 @@ function listingsForRegion(region, data, date, callback) {
                         coordinates: [building[1], building[0]]
                     },
                     thumbnail: building[4][1],
-                    bedroom: building[4][3],
-                    bath:  building[4][4],
-                    sq_feet: building[4][5],
                     region: region._id
                 });
 
@@ -236,10 +242,7 @@ function listingsForRegion(region, data, date, callback) {
                     dataForListing(savedListing, dataObject, date, cb);
                 });
             } else {
-                 //Check if data has changed
-                if (listing.bedroom !== building[4][3] || listing.bathroom !== building[4][4] || listing.sq_feet !== building[4][5]) {
-                    console.log("### LISTING CHANGE:",listing.name, listing._id,"\n\t\tBd:", listing.bedroom, building[4][3],"\n\t\tBa:", listing.bathroom, building[4][4],"\n\t\tSqft:", listing.sq_feet, building[4][5])
-                }
+
                 dataForListing(listing, dataObject, date, cb);
             }
         });
@@ -256,11 +259,10 @@ function dataForListing(listing, data, date, callback) {
         }
 
         if (!metric) {
-            const metric = new Metrics({
-                listing: listing._id,
-                data: data,
-                date: date
-            });
+            let metric = new Metrics(data);
+
+            metric.date = date;
+            metric.listing = listing._id;
 
             metric.save((err, savedMetric) => {
                 if (err) {
@@ -275,6 +277,12 @@ function dataForListing(listing, data, date, callback) {
     });
 }
 
+function toNumber(s) {
+    let regExArray = s.split(/^\$([0-9,]+).+/);
+    let rent = regExArray[1].replace(",", "");
+    return parseInt(rent);
+}
+
 function regionsJSONToMongoDB() {
     
 }
@@ -284,7 +292,7 @@ if (!module.parent) {
     if (args[0] === "-d" || args[0] === "--directory" && args[1]) {
         transformDirectory(args[1]);
     } else if (args[0] === "-f" || args[0] === "--file" && args[1]) {
-        transformFile(args[1]);
+        transformFile(args[1], null);
     } else {
         console.log("ERROR: Incorrect usage. Check file.");
         process.exit(1);

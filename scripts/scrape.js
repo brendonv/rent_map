@@ -9,6 +9,25 @@ const args = process.argv.slice(2);
 // const PORTLAND_REGIONS = require('../data/portland/regions.json');
 let REGIONS;
 
+/**
+ * COMMAND-LINE USAGE
+ *
+ * node scripts/scrape.js <CITY>
+ *
+ * DESCRIPTION
+ *
+ * Scrapes data off Zillow for city and its regions.
+ *
+ * OPTIONS
+ *
+ *      <CITY> : City to scrape. Optional
+ *
+ */
+
+/*
+ * Base function
+ */
+
 function getRentalData(city = "portland") {
 
     const fileURL = path.dirname(__dirname) + '/data/' + city + '/scraped/zillow_' + moment().format() + '.json';
@@ -25,11 +44,15 @@ function getRentalData(city = "portland") {
         callZillow(getURL(rid), object, index, fileURL, callback);
     }, function(err) {
         if (err) console.log("ERROR: ", err);
-
+        console.log("SCRAPE FINISHED: ", fileURL);
         transform.transformFile(fileURL, null, null);
     });
 
 };
+
+/*
+ * Helper functions
+ */
 
 function callZillow(url, region, index, fileURL, callback) {
     let body = '';

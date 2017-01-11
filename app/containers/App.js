@@ -14,23 +14,25 @@ class App extends Component {
 
   componentDidMount() {
     console.log("App.js Container :: componentDidMount")
-    // const { dispatch, selectedReddit } = this.props
-    // dispatch(fetchPostsIfNeeded(selectedReddit))
+    //Kick-off intial data request
+    const { dispatch, selectedCity, selectedRegion } = this.props
+    dispatch(fetchRegionDataIfNeeded(selectedCity, selectedRegion))
   }
 
   //Here is where we listen for the base actions and dispatch the fetch action
   componentWillReceiveProps(nextProps) {
-    console.log("App.js Container :: componentWillReceiveProps")
+    console.log("App.js Container :: componentWillReceiveProps", nextProps.selectedRegion, this.props.selectedRegion)
+    //Only call update if different region
     if (nextProps.selectedRegion !== this.props.selectedRegion) {
-      const { dispatch, selectedRegion } = nextProps
-      dispatch(fetchRegionDataIfNeeded(this.props.selectedCity, selectedRegion))
+      const { dispatch, selectedCity, selectedRegion } = nextProps
+      dispatch(fetchRegionDataIfNeeded(selectedCity, selectedRegion))
     }
   }
 
   handleClick(nextRegion) {
     // this.props.dispatch(selectReddit(nextReddit))
-    console.log(nextRegion);
-    this.props.dispatch(selectRegion(nextRegion))
+    console.log("#####", nextRegion);
+    this.props.dispatch(fetchRegionDataIfNeeded(this.props.selectedCity, nextRegion))
   }
 
   handleRefreshClick(e) {
@@ -80,12 +82,6 @@ function mapStateToProps(state) {
           dataByRegion,
           regionsByCity,
           togglePropertyType } = state
-
-          selectedRegion,
-    selectedCity,
-    dataByRegion,
-    regionsByCity,
-    togglePropertyType
   
   const { isFetching,
           lastUpdated,

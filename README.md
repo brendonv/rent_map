@@ -98,3 +98,18 @@ GET: https://www.trulia.com/_ajax/SRP/SRP/json/?url=%2Ffor_rent%2F5718_nh
 
 Must update webpack.config.js 
 entry.vendor array to include desired front-end dependency
+
+# Database
+
+## Collections
+
+Data split in to Regions, Listings, and Metrics.
+
+Metrics contains the dynamic data for each listing. Structure for Zillow API data:
+
+    "b": Number, //Bedroom
+    "ba": Number, //Bath
+    "sq": Number, //Square feet
+    "a": Number,  //Available units (BUILDING only)
+    "p": Number //Price
+

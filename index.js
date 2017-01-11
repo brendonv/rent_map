@@ -47,7 +47,7 @@ app.use(morgan('dev'));
  */
 
 mongoose.connect(config.mongoDB);
-console.log(config.mongoDB);
+console.log("config.mongoDB:",config.mongoDB);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -62,10 +62,12 @@ db.once('open', (cb) => {
 require('./models/listing');
 require('./models/region');
 require('./models/metrics');
+require('./models/aggregation');
 
 const Listing = mongoose.model('Listing');
 const Region = mongoose.model('Region');
 const Metrics = mongoose.model('Metrics');
+const Aggregation = mongoose.model('Aggregation');
 
 /*
  * Routes
@@ -78,7 +80,26 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/data/:city/regions', data.regions);
-app.get('/api/data/:city/:region', data.regionData);
+app.get('/api/data/:city/:regionName', data.regionData);
+
+/*
+ * Route params
+ */
+
+app.param('regionName', (req, res, next, id) => {
+    if (id.toUpperCase() === 'ALL') {
+        req.region = id;
+        return next();
+    }
+    Region.findOne({ name: id }, (error, data) => {
+        if (error) {
+            return next(error);
+        }
+
+        req.region = data;
+        next();
+    });
+});
 
 const server = app.listen(PORT, function () {
   const host = server.address().address;
